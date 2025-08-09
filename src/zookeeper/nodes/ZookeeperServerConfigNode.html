@@ -1,0 +1,125 @@
+<script type="text/javascript" template-section="onCompose">
+    node
+        .addDefault("name", { value:"Example Zookeeper Server", required:true})
+        .addDefault("servers", {value:"localhost:2181", required:true})
+        .addDefault("username", {value:"", required:false})
+        .addDefault("password", {value:"", required:false})
+        .addDefault("cacheTimeout", {value:"", required:false})
+        .setPaletteLabel("Zookeeper Server")
+        .setLabelStyle("node_label_white")
+        .setLabel(function() {return this.name })
+        .setColor("#0050E5")
+</script>
+
+<div template-section="onIncludeOnce">
+</div>
+
+<script type="text/javascript" template-section="onIncludeEditPrepare">
+{
+    let node = this;
+
+    $("#zk-test-connection-btn").on("click", function() {
+        let $btn = $(this);
+        let $result = $("#zk-test-connection-result");
+
+        let servers = $("#node-config-input-servers").val();
+
+        $result.text("Testing...").css("color", "gray");
+        $btn.prop("disabled", true);
+
+        $.ajax({
+            url: "zookeeperservice/testconnection",
+            type: "POST",
+            contentType: "application/json; charset=utf-8",
+            data: JSON.stringify({ servers: servers }),
+            success: function(response) {
+                $result.text("\u2714 " + response.message).css("color", "green");
+            },
+            error: function(jqXHR) {
+                let msg = "Connection failed";
+                try {
+                    let body = JSON.parse(jqXHR.responseText);
+                    if (body.error) { msg = body.error; }
+                } catch(e) {}
+                $result.text("\u2718 " + msg).css("color", "red");
+            },
+            complete: function() {
+                $btn.prop("disabled", false);
+            }
+        });
+    });
+}
+</script>
+
+<script type="text/javascript" template-section="onIncludeEditSave">
+</script>
+
+<script type="text/html" template-section="onIncludeEditForm">
+    <div class="form-row">
+        <label for="node-config-input-name" style="width:120px;"><i class="fa fa-tag"></i> Name</label>
+        <input type="text" id="node-config-input-name">
+    </div>
+
+    <div class="form-row">
+        <label for="node-config-input-servers" style="width:120px;"><i class="fa fa-server"></i> Servers</label>
+        <input type="text" id="node-config-input-servers">
+    </div>
+
+    <div class="form-row">
+        <label for="node-config-input-username" style="width:120px;"><i class="fa fa-user"></i> Username</label>
+        <input type="text" id="node-config-input-username">
+    </div>
+
+    <div class="form-row">
+        <label for="node-config-input-password" style="width:120px;"><i class="fa fa-lock"></i> Password</label>
+        <input type="password" id="node-config-input-password">
+    </div>
+
+    <div class="form-row">
+        <label for="node-config-input-cacheTimeout" style="width:120px;"><i class="fa fa-clock-o"></i> Cache Timeout</label>
+        <input type="text" id="node-config-input-cacheTimeout">
+    </div>
+
+    <div class="form-row">
+        <label></label>
+        <button type="button" id="zk-test-connection-btn" class="red-ui-button">
+            <i class="fa fa-plug"></i> Test Connection
+        </button>
+        <span id="zk-test-connection-result" style="margin-left: 10px; font-size: 12px;"></span>
+    </div>
+
+</script>
+
+<script type="text/markdown" template-section="onIncludeDocumentation">
+Connection configuration for an Apache ZooKeeper ensemble. Referenced by all ZooKeeper nodes in the flow.
+
+### Properties
+
+: *name*     (string) : A descriptive label for this connection.
+: *servers*  (string) : Comma-separated list of ZooKeeper server addresses in `host and port` format.
+: *username* (string) : Optional authentication username.
+: *password* (string) : Optional authentication password.
+
+### Details
+
+Single server:
+```
+zookeeper:2181
+```
+
+Ensemble (multiple servers):
+```
+host1:2181,host2:2181,host3:2181
+```
+
+### Actions
+
+**Test Connection** — attempts to connect to the configured ZooKeeper ensemble and reports success or failure inline without saving the node. Times out after 5 seconds if the server is unreachable.
+
+### References
+- [Apache ZooKeeper](https://zookeeper.apache.org/)
+</script>
+
+
+
+

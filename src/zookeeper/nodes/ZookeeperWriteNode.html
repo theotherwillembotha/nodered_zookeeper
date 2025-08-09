@@ -1,0 +1,105 @@
+<div template-section="onIncludeOnce">
+<style>
+    .node_label_white {
+        fill:white
+    }
+
+</style>
+</div>
+
+<script type="text/javascript" template-section="onCompose">
+    node
+        .addDefault("name", { value:"Zookeeper Write Node", required:true})
+        .addDefault("serverconfig", { type:"ZookeeperServerConfigNode", required:true })
+        .addDefault("nodepath", { value:"/example/test", required:true })
+        .addDefault("nodepath_type", { value:"str", required:false })
+        .addDefault("payloadTemplate", { value:"{{{json msg.payload}}}", required:true })
+        .setIcon("zookeeper.png")
+        .setPaletteLabel("Zookeeper Write Node")
+        .setLabelStyle("node_label_white")
+        .setLabel(function() {return this.name })
+        .setColor("#226C5B")
+        .setInput("input")
+        .addOutputs("event")
+</script>
+
+<script type="text/javascript" template-section="onIncludeEditPrepare">
+{
+    let node = this;
+    node.payloadTemplateEditor = RED.editor.createEditor({
+        id: 'node-input-payloadTemplateEditor',
+        mode: 'ace/mode/handlebars',
+        value: node.payloadTemplate
+    });
+    $("#node-input-nodepath").typedInput({
+        types: ["msg", "flow", "global", "str"],
+        typeField: "#node-input-nodepath_type"
+    });
+}
+</script>
+
+<script type="text/javascript" template-section="onIncludeEditSave">
+{
+    let node = this;
+    node.payloadTemplate = node.payloadTemplateEditor.getValue();
+    node.payloadTemplateEditor.destroy();
+    delete node.payloadTemplateEditor;
+}
+</script>
+
+<script type="text/html" template-section="onIncludeEditForm">
+    <div class="form-row">
+        <label for="node-input-name" style="width:120px;"><i class="fa fa-tag"></i> Name</label>
+        <input type="text" id="node-input-name" />
+    </div>
+
+    <div class="form-row">
+        <label for="node-input-serverconfig" style="width:120px;"><i class="fa fa-server"></i> Server</label>
+        <input type="text" id="node-input-serverconfig" />
+    </div>
+
+    <div class="form-row">
+        <label for="node-input-nodepath" style="width:120px;"><i class="fa fa-sitemap"></i> Node Path</label>
+        <input type="text" id="node-input-nodepath" />
+        <input type="hidden" id="node-input-nodepath_type" />
+    </div>
+
+    <div class="form-row">
+        <label for="node-input-payloadTemplateEditor" style="width:120px;"><i class="fa fa-code"></i> Template</label>
+        <div style="height: 250px; min-height:150px;" class="node-text-editor" id="node-input-payloadTemplateEditor"></div>
+    </div>
+</script>
+
+<script type="text/markdown" template-section="onIncludeDocumentation">
+Writes data to a ZooKeeper node whenever a message is received. Intermediate paths are created automatically if they do not exist.
+
+### Properties
+
+: *name*      (string) : Display label for this node.
+: *server*    (config) : The Zookeeper Server config node providing the connection.
+: *node path* (typed)  : The ZooKeeper path to write to. Supports `msg`, `flow`, `global`, and `str` (literal) types - e.g. set to `msg` / `topic` to use the incoming `msg.topic` as the path.
+: *template*  (string) : A Handlebars template for the data to write. The incoming message is available as `msg`. Use `{{{json msg.payload}}}` to serialise the full payload as JSON.
+
+### Inputs
+
+: *msg* : Any message - triggers a write. The message is passed through unchanged on successful write.
+
+### Outputs
+
+: *msg* : The original input message, forwarded after the write completes.
+
+### Details
+
+If the target ZooKeeper node does not exist, all intermediate nodes in the path are created automatically as persistent nodes before the write is performed.
+
+The **Template** field uses [Handlebars](https://handlebarsjs.com/) syntax. The full incoming message is available as `msg`:
+
+- `{{{json msg.payload}}}` - serialise `msg.payload` as a JSON string
+- `{{msg.payload.value}}` - write a single field as a string
+
+### References
+- [Apache ZooKeeper](https://zookeeper.apache.org/)
+- [Handlebars](https://handlebarsjs.com/)
+</script>
+
+

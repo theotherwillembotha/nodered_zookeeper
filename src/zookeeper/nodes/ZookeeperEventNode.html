@@ -1,0 +1,80 @@
+<div template-section="onIncludeOnce">
+<style>
+    .node_label_white {
+        fill:white
+    }
+</style>
+</div>
+
+<script type="text/javascript" template-section="onCompose">
+    node
+        .addDefault("name", { value:"Zookeeper Event Node", required:true})
+        .addDefault("serverconfig", {type:"ZookeeperServerConfigNode", required:true})
+        .addDefault("subscription", {required:true})
+        .addDefault("getvalueonsubscribe", { value:true})
+        .setIcon("zookeeper.png")
+        .setPaletteLabel("Zookeeper Event")
+        .setLabelStyle("node_label_white")
+        .setLabel(function() {return this.name })
+        .setColor("#226C5B")
+        .addOutputs("event")
+</script>
+
+<script type="text/javascript" template-section="onIncludeEditPrepare">
+</script>
+
+<script type="text/javascript" template-section="onIncludeEditSave">
+</script>
+
+<script type="text/html" template-section="onIncludeEditForm">
+    <div class="form-row">
+        <label for="node-input-name" style="width:120px;"><i class="fa fa-tag"></i> Name</label>
+        <input type="text" id="node-input-name" />
+    </div>
+
+    <div class="form-row">
+        <label for="node-input-serverconfig" style="width:120px;"><i class="fa fa-server"></i> Server</label>
+        <input type="text" id="node-input-serverconfig" />
+    </div>
+
+    <div class="form-row">
+        <label for="node-input-subscription" style="width:120px;"><i class="fa fa-bell"></i> Subscription</label>
+        <input type="text" id="node-input-subscription" />
+    </div>
+
+    <div class="form-row">
+        <input type="checkbox" id="node-input-getvalueonsubscribe" style="margin:8px 0 10px 120px; width:20px;" />
+        <label style="width:auto" for="node-input-getvalueonsubscribe">Get Value on Subscribe</label>
+    </div>
+</script>
+
+<script type="text/markdown" template-section="onIncludeDocumentation">
+Subscribes to a ZooKeeper node path and emits a message each time the value at that path changes.
+
+### Properties
+
+: *name*                 (string) : Display label for this node.
+: *server*               (config) : The Zookeeper Server config node providing the connection.
+: *subscription*         (string) : The ZooKeeper node path to watch (e.g. `/my/service/config`).
+: *get value on subscribe* (bool) : If enabled, immediately reads and emits the current value when the subscription is first established (including on flow deployment).
+
+### Outputs
+
+: *msg.topic*   (string) : The ZooKeeper path that changed.
+: *msg.payload* (any)    : The new value at that path. Parsed as JSON if possible; otherwise a plain string.
+
+### Details
+
+The node subscribes to the configured path and fires on every `NODE_DATA_CHANGED` event. If the node does not yet exist in ZooKeeper at startup, the subscription waits until it is created and then begins watching automatically.
+
+On redeploy, active watchers are released when the underlying ZooKeeper connection closes.
+
+### References
+- [Apache ZooKeeper](https://zookeeper.apache.org/)
+</script>
+
+
+
+
+
+

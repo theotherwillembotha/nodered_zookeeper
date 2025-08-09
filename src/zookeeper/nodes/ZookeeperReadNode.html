@@ -1,0 +1,108 @@
+<div template-section="onIncludeOnce">
+<style>
+    .node_label_white {
+        fill:white
+    }
+
+</style>
+</div>
+
+<script type="text/javascript" template-section="onCompose">
+    node
+        .addDefault("name", { value:"Zookeeper Read Node", required:true})
+        .addDefault("serverconfig", { type:"ZookeeperServerConfigNode", required:true })
+        .addDefault("nodepath", { value:"/example/test", required:true })
+        .addDefault("nodepath_type", { value:"str", required:false })
+        .addDefault("outputPath", {required:false})
+        .addDefault("outputPath_type", { value:"msg", required:false })
+        .setIcon("zookeeper.png")
+        .setPaletteLabel("Zookeeper Read Node")
+        .setLabelStyle("node_label_white")
+        .setLabel(function() {return this.name })
+        .setColor("#226C5B")
+        .setInput("input")
+        .addOutputs("event")
+</script>
+
+<script type="text/javascript" template-section="onIncludeEditPrepare">
+{
+    $("#node-input-nodepath").typedInput({
+        types: ["msg", "flow", "global", "str"],
+        typeField: "#node-input-nodepath_type"
+    });
+    $("#node-input-outputPath").typedInput({
+        types: ["msg", "flow", "global"],
+        typeField: "#node-input-outputPath_type"
+    });
+}
+</script>
+
+<script type="text/javascript" template-section="onIncludeEditSave">
+</script>
+
+<script type="text/html" template-section="onIncludeEditForm">
+    <div class="form-row">
+        <label for="node-input-name"  style="width:120px;"><i class="fa fa-tag"></i> Name</label>
+        <input type="text" id="node-input-name" />
+    </div>
+
+    <div class="form-row">
+        <label for="node-input-serverconfig" style="width:120px;"><i class="fa fa-server"></i> Server</label>
+        <input type="text" id="node-input-serverconfig" />
+    </div>
+
+    <div class="form-row">
+        <label for="node-input-nodepath" style="width:120px;"><i class="fa fa-sitemap"></i> Node Path</label>
+        <input type="text" id="node-input-nodepath" />
+        <input type="hidden" id="node-input-nodepath_type" />
+    </div>
+
+    <div class="form-row">
+        <label for="node-input-outputPath" style="width:120px;"><i class="fa fa-sign-out"></i> Output Path</label>
+        <input type="text" id="node-input-outputPath" />
+        <input type="hidden" id="node-input-outputPath_type" />
+    </div>
+</script>
+
+<script type="text/markdown" template-section="onIncludeDocumentation">
+Reads the current value of a ZooKeeper node whenever a message is received.
+
+### Properties
+
+: *name*        (string) : Display label for this node.
+: *server*      (config) : The Zookeeper Server config node providing the connection.
+: *node path*   (typed)  : The ZooKeeper path to read. Supports `msg`, `flow`, `global`, and `str` (literal) types - e.g. set to `msg` / `topic` to read the path from `msg.topic`.
+: *output path* (typed)  : Where to write the result. Supports `msg`, `flow`, and `global` types. Defaults to `msg` / `payload`.
+
+### Inputs
+
+: *msg* : Any message - triggers a read. The message is passed through with the result written at the configured output path.
+
+### Outputs
+
+: *msg* : The input message with the ZooKeeper value merged in at the configured output path. The value is parsed as JSON if possible; otherwise written as a plain string.
+
+### Details
+
+The input message passes through unchanged except for the value written at **Output Path**. If the path does not exist in ZooKeeper, the node waits indefinitely and does not forward the message.
+
+### Example
+
+**Node Path:** `msg` / `topic`
+**Output Path:** `msg` / `payload.config`
+
+Input message:
+```json
+{ "topic": "/services/myapp/config", "payload": {} }
+```
+
+Output message:
+```json
+{ "topic": "/services/myapp/config", "payload": { "config": { "retries": 3, "timeout": 5000 } } }
+```
+
+### References
+- [Apache ZooKeeper](https://zookeeper.apache.org/)
+</script>
+
+
