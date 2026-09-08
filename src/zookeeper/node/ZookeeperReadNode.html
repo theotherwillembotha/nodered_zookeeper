@@ -15,6 +15,7 @@
         .addDefault("nodepath_type", { value:"str", required:false })
         .addDefault("outputPath", {required:false})
         .addDefault("outputPath_type", { value:"msg", required:false })
+        .addDefault("returnEmptyValues", { value:false, required:false })
         .setIcon("zookeeper.png")
         .setPaletteLabel("Zookeeper Read Node")
         .setLabelStyle("node_label_white")
@@ -62,6 +63,11 @@
         <input type="text" id="node-input-outputPath" />
         <input type="hidden" id="node-input-outputPath_type" />
     </div>
+
+    <div class="form-row">
+        <input type="checkbox" id="node-input-returnEmptyValues" style="margin:8px 0 10px 120px; width:20px;" />
+        <label style="width:auto;" for="node-input-returnEmptyValues">Return empty values</label>
+    </div>
 </script>
 
 <script type="text/markdown" template-section="onIncludeDocumentation">
@@ -73,6 +79,7 @@ Reads the current value of a ZooKeeper node whenever a message is received.
 : *server*      (config) : The Zookeeper Server config node providing the connection.
 : *node path*   (typed)  : The ZooKeeper path to read. Supports `msg`, `flow`, `global`, and `str` (literal) types - e.g. set to `msg` / `topic` to read the path from `msg.topic`.
 : *output path* (typed)  : Where to write the result. Supports `msg`, `flow`, and `global` types. Defaults to `msg` / `payload`.
+: *return empty values* (boolean) : When checked, a message is still forwarded if the ZooKeeper path does not exist — the output path is simply left unset. When unchecked (default), the node produces no output for missing paths.
 
 ### Inputs
 
@@ -84,7 +91,7 @@ Reads the current value of a ZooKeeper node whenever a message is received.
 
 ### Details
 
-The input message passes through unchanged except for the value written at **Output Path**. If the path does not exist in ZooKeeper, the node waits indefinitely and does not forward the message.
+The input message passes through unchanged except for the value written at **Output Path**. If the path does not exist in ZooKeeper and **Return empty values** is unchecked, the node produces no output. If **Return empty values** is checked, the message is forwarded with the output path left unset.
 
 ### Example
 

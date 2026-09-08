@@ -6,7 +6,7 @@ import { Metrics, MetricsTemplateConfig, MetricType, CounterMetric, MetricsTempl
 
 import { ZookeeperServerConfigNode } from "./ZookeeperServerConfigNode";
 import Handlebars from "handlebars";
-import { ZookeeperClient, ZookeeperClientState } from "../services/ZookeeperService";
+import { ZookeeperClient, ZookeeperClientState } from "../service/ZookeeperService";
 
 Handlebars.registerHelper('json', function(context) {
     return JSON.stringify(context);
@@ -24,7 +24,7 @@ interface ZookeeperWriteNodeConfig extends MetricsTemplateConfig, LoggerTemplate
     name:"Zookeeper Write Node",
     group:"zookeeper",
     sourceFile:SourceUtility.getSourcePath("/build/", "/src/") + "ZookeeperWriteNode.html",
-    package: "@theotherwillembotha/nodered_pluginzookeeper",
+    package: "@theotherwillembotha/node-red-zookeeper",
     templates: [
         { template: LoggerTemplate, config: {}},
         { template: MetricsTemplate, config: {}}

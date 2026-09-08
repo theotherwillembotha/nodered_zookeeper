@@ -1,0 +1,141 @@
+<script type="text/javascript" template-section="onCompose">
+    node
+        .addDefault("name",         { value: "ZooKeeper State", required: true })
+        .addDefault("serverconfig", { type: "ZookeeperServerConfigNode", required: true })
+        .addDefault("znodePath",    { value: "/node-red/state", required: true })
+        .addDefault("stateMap",     { value: '{}', required: false })
+        .setPaletteLabel("ZooKeeper State")
+        .setLabel(function() { return this.name || "ZooKeeper State"; })
+</script>
+
+<script type="text/javascript" template-section="onIncludeEditPrepare">
+{
+    let node = this;
+
+    // Auto-populate the name from consumer context when this is a fresh node.
+    let nameInput = $("#node-config-input-name");
+    let ctx = window.__stateTemplateContext || {};
+    if (ctx.defaultName && (!nameInput.val() || nameInput.val() === "ZooKeeper State")) {
+        nameInput.val(ctx.defaultName);
+    }
+
+    // Build the state mapping table.
+    // ctx.states is the defaultStates array: [{key, value, canEdit, canRemove}, ...]
+    let contextStates = (ctx.states && ctx.states.length > 0) ? ctx.states : null;
+    window.__stateTemplateContext = null;
+
+    let existingMap = {};
+    try { existingMap = JSON.parse(node.stateMap || '{}'); } catch(e) {}
+
+    // Build stateRows: declared states first (with their suggested default value as placeholder),
+    // then any extra keys already in the saved map not covered by the declared states.
+    let stateRows = [];
+    if (contextStates) {
+        contextStates.forEach(function(state) {
+            stateRows.push({ key: state.key, placeholder: state.value, current: existingMap[state.key] || '' });
+        });
+        Object.keys(existingMap).forEach(function(k) {
+            if (!stateRows.some(function(r) { return r.key === k; })) {
+                stateRows.push({ key: k, placeholder: k, current: existingMap[k] || '' });
+            }
+        });
+    } else {
+        Object.keys(existingMap).forEach(function(k) {
+            stateRows.push({ key: k, placeholder: k, current: existingMap[k] || '' });
+        });
+    }
+
+    let $rows = $('#state-map-rows');
+    $rows.empty();
+    if (stateRows.length === 0) {
+        $rows.html('<div style="color:#888; font-size:0.9em; padding:4px 2px;">No fixed states — values stored as-is.</div>');
+    } else {
+        stateRows.forEach(function(state) {
+            let $row = $('<div style="display:flex; align-items:center; margin:4px 0;">' +
+                '<span style="width:110px; flex-shrink:0; font-weight:500;">' + state.key + '</span>' +
+                '<span style="margin:0 8px; color:#888;">-&gt;</span>' +
+                '<input type="text" class="state-map-input" data-state="' + state.key + '"' +
+                    ' style="flex:1;" placeholder="' + state.placeholder + '" value="' + state.current + '" />' +
+                '</div>');
+            $rows.append($row);
+        });
+    }
+}
+</script>
+
+<script type="text/javascript" template-section="onIncludeEditSave">
+{
+    // Serialize the state mapping table to JSON and write it to the hidden field.
+    let stateMap = {};
+    $('#state-map-rows .state-map-input').each(function() {
+        let stateName = $(this).data('state');
+        let value = ($(this).val() || '').trim();
+        if (stateName && value) {
+            stateMap[stateName] = value;
+        }
+    });
+    $('#node-config-input-stateMap').val(JSON.stringify(stateMap));
+}
+</script>
+
+<script type="text/html" template-section="onIncludeEditForm">
+    <div class="form-row">
+        <span style="display:inline-block; padding: 4px 0; color:#888;">
+            <i class="fa fa-sitemap" style="margin-right:6px;"></i>ZooKeeper State Provider
+        </span>
+    </div>
+
+    <!-- Name is stored but not shown — auto-set from the consumer node's name + suffix. -->
+    <input type="hidden" id="node-config-input-name" />
+
+    <div class="form-row editorsectionheading" style="margin-top:8px;">
+        <i class="w-16 fa fa-plug"></i> <span>Configuration</span>
+    </div>
+    <div class="editorgroupborder">
+        <div class="form-row nomargin">
+            <label class="towb_editorlabel" for="node-config-input-serverconfig">Server</label>
+            <input type="text" id="node-config-input-serverconfig" class="towb_editorfield" />
+        </div>
+        <div class="form-row nomargin">
+            <label class="towb_editorlabel" for="node-config-input-znodePath">ZNode Path</label>
+            <input type="text" id="node-config-input-znodePath" class="towb_editorfield" placeholder="/node-red/state" />
+        </div>
+    </div>
+
+    <div class="form-row editorsectionheading" style="margin-top:8px;">
+        <i class="w-16 fa fa-random"></i> <span>State Mapping</span>
+    </div>
+    <div class="editorgroupborder">
+        <div id="state-map-rows"></div>
+        <div style="color:#888; font-size:0.85em; margin-top:6px;">
+            Leave a value empty to store the internal state name unchanged.
+        </div>
+    </div>
+
+    <!-- Hidden field — populated by onIncludeEditSave -->
+    <input type="hidden" id="node-config-input-stateMap" />
+</script>
+
+<script type="text/markdown" template-section="onIncludeDocumentation">
+Stores a named state value in a ZooKeeper ensemble, enabling distributed state sharing
+across multiple Node-RED instances.
+
+### Properties
+
+: *server*     (config) : The ZooKeeper Server Config Node providing the shared connection.
+: *ZNode path* (string) : The ZNode path where the state value is stored (e.g. `/node-red/circuit-breaker/prod-api`). Multiple Node-RED instances pointing to the same path share state automatically.
+
+### State Mapping
+
+Maps internal state names (as used by the referencing node) to the string values stored in ZooKeeper. This is useful when an external system controls the ZNode and uses different conventions — for example storing `"ON"` / `"OFF"` while the circuit breaker uses `"Closed"` / `"Open"`.
+
+Leave any mapping value empty to store the internal state name unchanged.
+
+The reverse mapping is applied automatically when reading: the ZooKeeper value is translated back to the internal state name before it is delivered to the consumer.
+
+### Details
+
+Intermediate ZNode path components are created automatically if they do not exist.
+
+ZooKeeper watches are used for subscriptions, so state changes propagate in near-real-time to all subscribed Node-RED nodes across the ensemble.
+</script>

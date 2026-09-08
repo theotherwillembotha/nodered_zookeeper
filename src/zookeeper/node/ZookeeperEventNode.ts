@@ -4,7 +4,7 @@ import { Log, BaseNode, NodeDescription, NodeManager, SourceUtility } from "@the
 import { Metrics, MetricsTemplate, MetricsTemplateConfig, MetricType, CounterMetric } from "@theotherwillembotha/node-red-plugincore";
 import { LoggerTemplate, Logger, LoggerTemplateConfig,  } from "@theotherwillembotha/node-red-plugincore";
 import { ZookeeperServerConfigNode } from "./ZookeeperServerConfigNode";
-import { ZookeeperClient, ZookeeperClientState, ZookeeperSubscriber } from "../services/ZookeeperService";
+import { ZookeeperClient, ZookeeperClientState, ZookeeperSubscriber } from "../service/ZookeeperService";
 
 interface ZookeeperEventNodeConfig extends MetricsTemplateConfig, LoggerTemplateConfig {
     serverconfig: string;
@@ -17,7 +17,7 @@ interface ZookeeperEventNodeConfig extends MetricsTemplateConfig, LoggerTemplate
     name:"Zookeeper Event Node",
     group:"zookeeper",
     sourceFile:SourceUtility.getSourcePath("/build/", "/src/") + "ZookeeperEventNode.html",
-    package: "@theotherwillembotha/nodered_pluginzookeeper",
+    package: "@theotherwillembotha/node-red-zookeeper",
     templates: [
         { template: LoggerTemplate, config: {}},
         { template: MetricsTemplate, config: {}}

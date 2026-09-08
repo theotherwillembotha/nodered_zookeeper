@@ -1,8 +1,14 @@
-import { BaseService, ServiceDescriptor } from "@theotherwillembotha/node-red-plugincore";
+import { BaseService, ServiceDescription } from "@theotherwillembotha/node-red-plugincore";
 import { NodeAPI, NodeAPISettingsWithData } from "node-red";
 import { Client, CreateMode, createClient as createZookeeperClient } from "node-zookeeper-client";
 
 
+@ServiceDescription({
+    id: "@theotherwillembotha/zookeeperservice",
+    name: "ZookeeperService",
+    type: "integration-plugin",
+    sourceFile: "./zookeeper/service/ZookeeperService",
+})
 export class ZookeeperService extends BaseService {
 
     private red!: NodeAPI<NodeAPISettingsWithData>;
@@ -55,14 +61,7 @@ export class ZookeeperService extends BaseService {
 
     deinit(_red: NodeAPI<NodeAPISettingsWithData>): void {}
 
-    static override getServiceDescriptor():ServiceDescriptor {
-        return new ServiceDescriptor(
-            "@theotherwillembotha/zookeeperservice",
-            "ZookeeperService", 
-            "integration-plugin",
-            "./zookeeper/services/ZookeeperService",
-            ZookeeperService);
-    }
+
 }
 
 export enum ZookeeperClientState {
@@ -114,12 +113,10 @@ export class ZookeeperClient {
                 (error, stat) => {
                     // if the node exists, watch it. otherwise, wait for it to exist.
                     if(stat){
-                        if(subscriber.getvalueonsubscribe){
-                            this._client.getData(path, (error, data, stat) => {
-                                subscriber.callback(path, data);
-                            });
-                        }
-                        this.watch(path, subscriber.callback);
+                        // pass getvalueonsubscribe into watch() so it controls whether the
+                        // initial getData completion fires the callback. Without this,
+                        // watch() always emits the current value regardless of the flag.
+                        this.watch(path, subscriber.callback, subscriber.getvalueonsubscribe);
                         return;
                     }
                      this.waitForExists(path, subscriber.callback);
@@ -143,15 +140,15 @@ export class ZookeeperClient {
         )
     }
 
-    private watch(path:string, callback:ZookeeperDataCallback){
+    private watch(path:string, callback:ZookeeperDataCallback, emitCurrentValue:boolean = true){
         this._client.getData(path,
             (event) => {
-                // if the node data changed, just watch it again.
+                // if the node data changed, just watch it again — always emit on actual changes.
                 if(event.name === "NODE_DATA_CHANGED"){
-                    this.watch(path, callback);
+                    this.watch(path, callback, true);
                     return;
                 }
-                // if the node data changed, regiser a new create observer
+                // if the node was deleted, register a new create observer.
                 if(event.name === "NODE_DELETED"){
                    this.waitForExists(path, callback);
                    return;
@@ -160,7 +157,7 @@ export class ZookeeperClient {
             (error, data, stat) => {
                 // if there is an error, it probably means that the node was deleted.
                 if(error){ return; }
-                callback(path, data);
+                if(emitCurrentValue){ callback(path, data); }
             }
         )
     }
@@ -209,16 +206,22 @@ export class ZookeeperClient {
         })
     }
 
-    public async readNode(path:string):Promise<Buffer<ArrayBufferLike>> {
+    public async readNode(path:string):Promise<Buffer<ArrayBufferLike> | null> {
         return new Promise((resolve, reject) => {
 
             this._client.exists(path,
                 (error, stat) => {
                     if(error){
-                        reject();
+                        reject(error);
+                    }
+                    else if(!stat){
+                        resolve(null);  // path does not exist
                     }
                     else{
-                        this._client.getData(path, (error, data, stat) => { resolve(data) });
+                        this._client.getData(path, (error, data, stat) => {
+                            if(error){ reject(error); return; }
+                            resolve(data);
+                        });
                     }
                 }
             )

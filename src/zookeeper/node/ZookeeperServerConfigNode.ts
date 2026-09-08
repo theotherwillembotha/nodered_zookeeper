@@ -1,7 +1,7 @@
 
 import { Node } from "node-red";
 import { ConfigNode, ConfigNodeConfig, NodeDescription, SourceUtility } from "@theotherwillembotha/node-red-plugincore";
-import { ZookeeperService, ZookeeperClient } from "../services/ZookeeperService";
+import { ZookeeperService, ZookeeperClient } from "../service/ZookeeperService";
 import { Client, createClient as createZookeeperClient } from "node-zookeeper-client";
 
 interface ZookeeperServerConfigNodeConfig extends ConfigNodeConfig {
@@ -13,7 +13,7 @@ interface ZookeeperServerConfigNodeConfig extends ConfigNodeConfig {
     name:"Zookeeper Config Node",
     group:"config",
     sourceFile:SourceUtility.getSourcePath("/build/", "/src/") + "ZookeeperServerConfigNode.html",
-    package: "@theotherwillembotha/nodered_pluginzookeeper",
+    package: "@theotherwillembotha/node-red-zookeeper",
     dependencies:[ ZookeeperService ],
     tags: [ "Zookeeper" ]
 })

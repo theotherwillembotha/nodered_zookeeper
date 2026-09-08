@@ -5,7 +5,7 @@ import { LoggerTemplate, Log, Logger, LoggerTemplateConfig } from "@theotherwill
 import { Metrics, MetricsTemplateConfig, MetricType, CounterMetric, MetricsTemplate } from "@theotherwillembotha/node-red-plugincore";
 
 import { ZookeeperServerConfigNode } from "./ZookeeperServerConfigNode";
-import { ZookeeperClient, ZookeeperClientState } from "../services/ZookeeperService";
+import { ZookeeperClient, ZookeeperClientState } from "../service/ZookeeperService";
 
 interface ZookeeperReadNodeConfig extends MetricsTemplateConfig, LoggerTemplateConfig, InputConfig {
     serverconfig: string;
@@ -13,6 +13,7 @@ interface ZookeeperReadNodeConfig extends MetricsTemplateConfig, LoggerTemplateC
     nodepath_type: string;
     outputPath: string;
     outputPath_type: string;
+    returnEmptyValues: boolean;
 }
 
 @NodeDescription({
@@ -20,7 +21,7 @@ interface ZookeeperReadNodeConfig extends MetricsTemplateConfig, LoggerTemplateC
     name:"Zookeeper Read Node",
     group:"zookeeper",
     sourceFile:SourceUtility.getSourcePath("/build/", "/src/") + "ZookeeperReadNode.html",
-    package: "@theotherwillembotha/nodered_pluginzookeeper",
+    package: "@theotherwillembotha/node-red-zookeeper",
     templates: [
         { template: LoggerTemplate, config: {}},
         { template: MetricsTemplate, config: {}}
@@ -72,6 +73,15 @@ export class ZookeeperReadNode extends BaseNode<ZookeeperReadNodeConfig> {
 
                 this._client.readNode(path)
                 .then(data => {
+                    // data is null when the path does not exist in ZooKeeper
+                    if(data === null) {
+                        if(this.config().returnEmptyValues) {
+                            this.log.log({path, data: null});
+                            this.node().send([message as any]);
+                        }
+                        return;
+                    }
+
                     this._counter.inc();
                     let bufferData = data.toString();
                     let value: any;
