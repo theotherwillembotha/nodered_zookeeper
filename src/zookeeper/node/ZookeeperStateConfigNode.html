@@ -48,7 +48,7 @@
     let $rows = $('#state-map-rows');
     $rows.empty();
     if (stateRows.length === 0) {
-        $rows.html('<div style="color:#888; font-size:0.9em; padding:4px 2px;">No fixed states — values stored as-is.</div>');
+        $rows.html('<div style="color:#888; font-size:0.9em; padding:4px 2px;">No fixed states - values stored as-is.</div>');
     } else {
         stateRows.forEach(function(state) {
             let $row = $('<div style="display:flex; align-items:center; margin:4px 0;">' +
@@ -85,7 +85,7 @@
         </span>
     </div>
 
-    <!-- Name is stored but not shown — auto-set from the consumer node's name + suffix. -->
+    <!-- Name is stored but not shown - auto-set from the consumer node's name + suffix. -->
     <input type="hidden" id="node-config-input-name" />
 
     <div class="form-row editorsectionheading" style="margin-top:8px;">
@@ -112,7 +112,7 @@
         </div>
     </div>
 
-    <!-- Hidden field — populated by onIncludeEditSave -->
+    <!-- Hidden field - populated by onIncludeEditSave -->
     <input type="hidden" id="node-config-input-stateMap" />
 </script>
 
@@ -127,7 +127,7 @@ across multiple Node-RED instances.
 
 ### State Mapping
 
-Maps internal state names (as used by the referencing node) to the string values stored in ZooKeeper. This is useful when an external system controls the ZNode and uses different conventions — for example storing `"ON"` / `"OFF"` while the circuit breaker uses `"Closed"` / `"Open"`.
+Maps internal state names (as used by the referencing node) to the string values stored in ZooKeeper. This is useful when an external system controls the ZNode and uses different conventions - for example storing `"ON"` / `"OFF"` while the circuit breaker uses `"Closed"` / `"Open"`.
 
 Leave any mapping value empty to store the internal state name unchanged.
 

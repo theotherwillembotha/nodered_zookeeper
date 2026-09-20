@@ -65,8 +65,9 @@
     </div>
 
     <div class="form-row">
-        <input type="checkbox" id="node-input-returnEmptyValues" style="margin:8px 0 10px 120px; width:20px;" />
-        <label style="width:auto;" for="node-input-returnEmptyValues">Return empty values</label>
+        <label class="towb_editorlabel nomargin">&nbsp;</label>
+        <input class="towb_checkbox" type="checkbox" id="node-input-returnEmptyValues" />
+        <label class="towb_checkboxlabel" for="node-input-returnEmptyValues">Return empty values</label>
     </div>
 </script>
 
@@ -79,7 +80,7 @@ Reads the current value of a ZooKeeper node whenever a message is received.
 : *server*      (config) : The Zookeeper Server config node providing the connection.
 : *node path*   (typed)  : The ZooKeeper path to read. Supports `msg`, `flow`, `global`, and `str` (literal) types - e.g. set to `msg` / `topic` to read the path from `msg.topic`.
 : *output path* (typed)  : Where to write the result. Supports `msg`, `flow`, and `global` types. Defaults to `msg` / `payload`.
-: *return empty values* (boolean) : When checked, a message is still forwarded if the ZooKeeper path does not exist — the output path is simply left unset. When unchecked (default), the node produces no output for missing paths.
+: *return empty values* (boolean) : When checked, a message is still forwarded if the ZooKeeper path does not exist - the output path is simply left unset. When unchecked (default), the node produces no output for missing paths.
 
 ### Inputs
 

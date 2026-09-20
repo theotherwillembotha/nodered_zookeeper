@@ -83,7 +83,14 @@ export class ZookeeperClient {
 
     public constructor(client:Client){
         this._client = client;
-        
+
+        // Without an 'error' listener, Node.js treats a ZK connection error as an
+        // uncaught exception and crashes the process. Log it and notify status listeners.
+        (this._client as any).addListener("error", (err: any) => {
+            console.error("ZookeeperClient error:", String(err));
+            this._statusListeners.forEach(listener => listener(ZookeeperClientState.Disconnected));
+        });
+
         this._client.addListener("state", (state) => {
             if(["DISCONNECTED"].includes(state.name)){
                 this._statusListeners.forEach(listener => listener(ZookeeperClientState.Disconnected))
@@ -92,9 +99,6 @@ export class ZookeeperClient {
             if(["SYNC_CONNECTED", "CONNECTED_READ_ONLY"].includes(state.name)){
                 this._statusListeners.forEach(listener => listener(ZookeeperClientState.Connected))
             }
-            //if(state.name === "AUTH_FAILED"){ _this.node().status({fill:"red",shape:"dot",text:"Authentication Failed"}); }
-            //if(state.name === "SASL_AUTHENTICATED"){ _this.node().status({fill:"green",shape:"dot",text:"Authenticated"}); }
-            //if(state.name === "EXPIRED"){ _this.node().status({fill:"green",shape:"dot",text:"Expired"}); }
         })
     }
 
@@ -111,6 +115,7 @@ export class ZookeeperClient {
             // check if the path exists.
             this._client.exists(path,
                 (error, stat) => {
+                    if(error){ console.error("ZookeeperClient.subscribe exists error:", String(error)); return; }
                     // if the node exists, watch it. otherwise, wait for it to exist.
                     if(stat){
                         // pass getvalueonsubscribe into watch() so it controls whether the
@@ -119,31 +124,33 @@ export class ZookeeperClient {
                         this.watch(path, subscriber.callback, subscriber.getvalueonsubscribe);
                         return;
                     }
-                     this.waitForExists(path, subscriber.callback);
+                    this.waitForExists(path, subscriber.callback);
                 }
             )
         };
     }
 
     private waitForExists(path:string, callback:ZookeeperDataCallback){
-        this._client.exists(path, 
+        this._client.exists(path,
             (event) => {
-                // if the node now eixsts, watch it.
+                // if the node now exists, watch it.
                 if(event.name === "NODE_CREATED"){
                     this.watch(path, callback);
                     return;
                 }
 
                 console.error("Unhandled ZooKeeper exists event:", event);
-            } ,
-            (error, stat) => {}
+            },
+            (error, _stat) => {
+                if(error){ console.error("ZookeeperClient.waitForExists error:", String(error)); }
+            }
         )
     }
 
     private watch(path:string, callback:ZookeeperDataCallback, emitCurrentValue:boolean = true){
         this._client.getData(path,
             (event) => {
-                // if the node data changed, just watch it again — always emit on actual changes.
+                // if the node data changed, just watch it again - always emit on actual changes.
                 if(event.name === "NODE_DATA_CHANGED"){
                     this.watch(path, callback, true);
                     return;

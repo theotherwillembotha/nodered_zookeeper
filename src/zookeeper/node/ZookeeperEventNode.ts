@@ -59,10 +59,10 @@ export class ZookeeperEventNode extends BaseNode<ZookeeperEventNodeConfig> {
             getvalueonsubscribe: config.getvalueonsubscribe,
             callback:(path:string, data:Buffer<ArrayBufferLike>) => {
                 this._counter.inc();
-                let bufferData = data.toString();
+                let bufferData = (data) ? data.toString() : null;
                 try{
                     // attempt to parse the data as something other than a buffer.
-                    let jsonData = JSON.parse(bufferData);
+                    let jsonData = (bufferData) ? JSON.parse(bufferData) : null;
                     this._log.log({path:path, data:jsonData});
                     node.send([{topic:path, payload:jsonData}]);
                 }

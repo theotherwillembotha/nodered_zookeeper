@@ -7,7 +7,7 @@ import { ZookeeperClient, ZookeeperSubscriber } from "../service/ZookeeperServic
 interface ZookeeperStateConfigNodeConfig extends ConfigNodeConfig {
     serverconfig: string;
     znodePath: string;
-    stateMap: string;  // JSON: Record<string, string> — maps internal state names to external ZK values
+    stateMap: string;  // JSON: Record<string, string> - maps internal state names to external ZK values
 }
 
 // ******************************************************* //
@@ -39,12 +39,17 @@ class ZookeeperStateHandle implements StateHandle {
             if (data === null) return null;
             const raw = data.toString('utf8');
             return this._reverseMap[raw] ?? raw;
+        }).catch(err => {
+            console.error(`ZookeeperStateHandle.get(${this._path}) error:`, String(err));
+            return null;
         });
     }
 
     public set(stateName: string): Promise<void> {
         const mapped = this._forwardMap[stateName] ?? stateName;
-        return this._zkClient.writeNode(this._path, mapped);
+        return this._zkClient.writeNode(this._path, mapped).catch(err => {
+            console.error(`ZookeeperStateHandle.set(${this._path}) error:`, String(err));
+        });
     }
 
     public subscribe(callback: (stateName: string) => void): void {

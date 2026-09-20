@@ -29,7 +29,7 @@ export class ZookeeperServerConfigNode extends ConfigNode<ZookeeperServerConfigN
         this._zk.connect();
 
         this.node().on("close", () => {
-            _this._zk.close();
+            try { _this._zk.close(); } catch(e) { /* ignore - client may already be in an error state */ }
         });
     }
 
