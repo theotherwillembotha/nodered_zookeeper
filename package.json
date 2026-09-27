@@ -1,6 +1,6 @@
 {
   "name": "@theotherwillembotha/node-red-zookeeper",
-  "version": "0.4.0",
+  "version": "0.4.4",
   "description": "A Zookeeper plugin for Node-RED",
   "main": "./build/index.js",
   "exports": "./build/index.js",
@@ -33,8 +33,7 @@
   },
   "dependencies": {
     "node-zookeeper-client": "^1.1.3",
-    "@theotherwillembotha/node-red-plugincore": "^0.4.2",
-    "handlebars": "^4.7.8"
+    "@theotherwillembotha/node-red-plugincore": "^0.4.4"
   },
   "devDependencies": {
     "@theotherwillembotha/node-red-plugincore": "../nodered_plugincore",

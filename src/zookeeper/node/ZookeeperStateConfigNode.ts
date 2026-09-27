@@ -2,6 +2,7 @@ import { Node } from "node-red";
 import { ConfigNodeConfig, SourceUtility, NodeManager } from "@theotherwillembotha/node-red-plugincore";
 import { NodeDescription } from "@theotherwillembotha/node-red-plugincore";
 import { StateConfigNode, StateHandle } from "@theotherwillembotha/node-red-plugincore";
+import { ZookeeperServerConfigNode } from "./ZookeeperServerConfigNode";
 import { ZookeeperClient, ZookeeperSubscriber } from "../service/ZookeeperService";
 
 interface ZookeeperStateConfigNodeConfig extends ConfigNodeConfig {
@@ -87,6 +88,7 @@ class ZookeeperStateHandle implements StateHandle {
     group: "config",
     sourceFile: SourceUtility.getSourcePath("/build/", "/src/") + "ZookeeperStateConfigNode.html",
     package: "@theotherwillembotha/node-red-zookeeper",
+    dependencies:[ ZookeeperServerConfigNode ],
     tags: ["StateProvider"]
 })
 export class ZookeeperStateConfigNode extends StateConfigNode {

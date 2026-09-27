@@ -1,6 +1,5 @@
 import { NodeGenerator, NodeTypeService } from "@theotherwillembotha/node-red-plugincore";
 
-import { ZookeeperService } from "./zookeeper/service/ZookeeperService";
 import { ZookeeperStateConfigNode } from "./zookeeper/node/ZookeeperStateConfigNode";
 import { ZookeeperServerConfigNode } from "./zookeeper/node/ZookeeperServerConfigNode";
 import { ZookeeperEventNode } from "./zookeeper/node/ZookeeperEventNode";
@@ -9,7 +8,6 @@ import { ZookeeperReadNode } from "./zookeeper/node/ZookeeperReadNode";
 
 new NodeGenerator("./src/zookeeper/")
     .registerService(NodeTypeService)
-    .registerService(ZookeeperService)
     .registerNode(ZookeeperStateConfigNode)
     .registerNode(ZookeeperServerConfigNode)
     .registerNode(ZookeeperEventNode)
