@@ -15,6 +15,7 @@ const sharedConfig = {
     target: 'node18',
     external,
     format: 'cjs',
+    loader: { '.html': 'text' },
     // Nodes.js does require("@theotherwillembotha/node-red-zookeeper") (self-reference).
     // Alias it to the local build output so esbuild can bundle it inline.
     alias: {

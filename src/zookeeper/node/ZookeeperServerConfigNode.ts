@@ -15,7 +15,7 @@ interface ZookeeperServerConfigNodeConfig extends ConfigNodeConfig {
     sourceFile:SourceUtility.getSourcePath("/build/", "/src/") + "ZookeeperServerConfigNode.html",
     package: "@theotherwillembotha/node-red-zookeeper",
     dependencies:[ ZookeeperService ],
-    tags: [ "Zookeeper" ]
+    tags: [ "Zookeeper", "StateProvider" ]
 })
 export class ZookeeperServerConfigNode extends ConfigNode<ZookeeperServerConfigNodeConfig> {
     private _client: ZookeeperClient;

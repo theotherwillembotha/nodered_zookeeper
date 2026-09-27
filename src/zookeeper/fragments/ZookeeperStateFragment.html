@@ -1,0 +1,81 @@
+<script type="application/json" fragment-section="metaData">
+{ "label": "ZooKeeper State" }
+</script>
+
+<script type="text/html" fragment-section="onForm">
+    <div class="form-row nomargin">
+        <label class="towb_editorlabel" for="fragment-zk-znodePath">ZNode Path</label>
+        <input type="text" id="fragment-zk-znodePath" style="width: 70%;" placeholder="/node-red/state" />
+    </div>
+
+    <div class="form-row editorsectionheading" style="margin-top:8px;">
+        <i class="w-16 fa fa-random"></i> <span>State Mapping</span>
+    </div>
+    <div id="fragment-zk-state-map-rows"></div>
+    <div style="color:#888; font-size:0.85em; margin-top:6px; padding: 0 4px;">
+        Leave a value empty to store the internal state name unchanged.
+    </div>
+</script>
+
+<script type="text/javascript" fragment-section="onLoad">
+    var $c = $(container);
+    var ctx = window.__stateTemplateContext || {};
+
+    // ── ZNode Path ──
+    $c.find("#fragment-zk-znodePath").val(config.znodePath || "/node-red/state");
+
+    // ── State Mapping Table ──
+    var contextStates = (ctx.states && ctx.states.length > 0) ? ctx.states : null;
+    var existingMap = {};
+    try { existingMap = config.stateMap ? JSON.parse(config.stateMap) : {}; } catch(e) {}
+
+    var stateRows = [];
+    if (contextStates) {
+        contextStates.forEach(function(state) {
+            stateRows.push({ key: state.key, placeholder: state.value, current: existingMap[state.key] || "" });
+        });
+        Object.keys(existingMap).forEach(function(k) {
+            if (!stateRows.some(function(r) { return r.key === k; })) {
+                stateRows.push({ key: k, placeholder: k, current: existingMap[k] || "" });
+            }
+        });
+    } else {
+        Object.keys(existingMap).forEach(function(k) {
+            stateRows.push({ key: k, placeholder: k, current: existingMap[k] || "" });
+        });
+    }
+
+    var $rows = $c.find("#fragment-zk-state-map-rows");
+    $rows.empty();
+    if (stateRows.length === 0) {
+        $rows.html('<div style="color:#888; font-size:0.9em; padding:4px 2px;">No fixed states - values stored as-is.</div>');
+    } else {
+        stateRows.forEach(function(state) {
+            var $row = $('<div style="display:flex; align-items:center; margin:4px 0;">' +
+                '<span style="width:110px; flex-shrink:0; font-weight:500;">' + state.key + '</span>' +
+                '<span style="margin:0 8px; color:#888;">&#8594;</span>' +
+                '<input type="text" class="zk-state-map-input" data-state="' + state.key + '"' +
+                    ' style="flex:1;" placeholder="' + state.placeholder + '" value="' + state.current + '" />' +
+                '</div>');
+            $rows.append($row);
+        });
+    }
+</script>
+
+<script type="text/javascript" fragment-section="onSave">
+    var $c = $(container);
+
+    var stateMap = {};
+    $c.find(".zk-state-map-input").each(function() {
+        var stateName = $(this).data("state");
+        var value = ($(this).val() || "").trim();
+        if (stateName && value) {
+            stateMap[stateName] = value;
+        }
+    });
+
+    return {
+        znodePath: $c.find("#fragment-zk-znodePath").val() || "/node-red/state",
+        stateMap: JSON.stringify(stateMap)
+    };
+</script>
